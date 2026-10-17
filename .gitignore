@@ -1,0 +1,7 @@
+# 你的真实资料，绝不入库
+profile.json
+网申秒填助手_v3.0.user.js
+*.user.js
+
+__pycache__/
+*.pyc
