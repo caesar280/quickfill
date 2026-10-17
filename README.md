@@ -2,7 +2,7 @@
 
 **中文** | [English](README_EN.md)
 
-[![CI](https://github.com/caesar280/campus-application-autofill/actions/workflows/ci.yml/badge.svg)](../../actions/workflows/ci.yml)
+[![CI](https://github.com/caesar280/quickfill/actions/workflows/ci.yml/badge.svg)](../../actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 校招网申（在线申请表）批量自动填充的油猴脚本。一份 `profile.json` 管全部资料，一键填完一整页表单——**只填充，绝不自动提交**。
@@ -22,8 +22,8 @@
 仓库里带了一张[演示表单](demo/test.html)（`demo/test.html`），模拟常见网申控件：文本框、原生下拉、单选组、**自定义下拉**、**三级级联省市区**、日期、多行自评。
 
 ```bash
-git clone https://github.com/caesar280/campus-application-autofill.git
-cd campus-application-autofill
+git clone https://github.com/caesar280/quickfill.git
+cd quickfill
 cp profile.example.json profile.json && python build_v3.py
 # 产物装进 Tampermonkey，然后本地起个服务打开演示页：
 python -m http.server 18777

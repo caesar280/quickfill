@@ -1,4 +1,4 @@
-# campus-application-autofill (网申秒填助手)
+# quickfill (网申秒填助手)
 
 [中文](README.md) | **English**
 
