@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Build userscript from example profile
+        run: |
+          cp profile.example.json profile.json
+          python build_v3.py
+
+      - name: Syntax check generated userscript
+        run: node --check "网申秒填助手_v3.0.user.js"
+
+      - name: Verify no real profile leaked
+        run: |
+          # profile.json 与 *.user.js 不应被提交；产物只允许来自 example
+          if git ls-files --error-unmatch profile.json >/dev/null 2>&1; then
+            echo "::error::profile.json 被提交了——真实资料严禁入库"; exit 1
+          fi
+          if grep -q "__PROFILE_JSON__" "网申秒填助手_v3.0.user.js"; then
+            echo "::error::构建产物仍含占位符"; exit 1
+          fi

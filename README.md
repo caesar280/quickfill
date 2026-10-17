@@ -1,8 +1,36 @@
 # 网申秒填助手 v3.0
 
+**中文** | [English](README_EN.md)
+
+[![CI](https://github.com/caesar280/campus-application-autofill/actions/workflows/ci.yml/badge.svg)](../../actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 校招网申（在线申请表）批量自动填充的油猴脚本。一份 `profile.json` 管全部资料，一键填完一整页表单——**只填充，绝不自动提交**。
 
-解决的问题：秋招季每个公司都要在各自的 ATS 里把姓名、学校、实习、自我评价等几十个字段重新填一遍，费时且容易抄错。
+解决的问题：秋招季每个公司都要在各自的 ATS 里把姓名、学校、实习、自我评价等几十个字段重新填一遍，费时且容易抄错。2026 秋招季在十几个真实网申系统上实战打磨过。
+
+![演示：一键填充](docs/screenshots/demo-form.png)
+
+填完的表单：绿色描边 = 填充成功；橙色 = 需人工确认（值已自动复制到剪贴板）。右下角是脚本控制面板。
+
+![控制面板](docs/screenshots/demo-panel.png)
+
+面板支持：一键填充 / 匹配预览 / 按岗位切换 variant / 实习·校园·项目·获奖逐条填 / 长文本一键复制。**永远不会替你点「提交」。**
+
+## 在线试用
+
+仓库里带了一张[演示表单](demo/test.html)（`demo/test.html`），模拟常见网申控件：文本框、原生下拉、单选组、**自定义下拉**、**三级级联省市区**、日期、多行自评。
+
+```bash
+git clone https://github.com/caesar280/campus-application-autofill.git
+cd campus-application-autofill
+cp profile.example.json profile.json && python build_v3.py
+# 产物装进 Tampermonkey，然后本地起个服务打开演示页：
+python -m http.server 18777
+# 浏览器访问 http://127.0.0.1:18777/demo/test.html → 点面板「⚡ 一键填充」
+```
+
+不想装脚本也可以直接打开 `demo/test.html` 看表单长什么样。
 
 ## 特性
 
@@ -11,7 +39,7 @@
 - **全局唯一匹配**：所有（字段, 控件）组合打分后按分贪心一一配对，不互相抢框
 - **控件类型全覆盖**：原生 select / 自定义下拉 / 单选组 / 多选 / **级联省市区逐级点选**（含变体值回退）/ date & month / ant-design 日期组件
 - **岗位变体（variants）**：投市场岗自动换营销口径，投工艺岗自动换化工口径——期望职能、首条经历、自我评价、包含/排除区块按岗位切换
-- **级联预算控制**：单字段 6s 超时快速放弃，不拖死整个队列
+- **级联预算控制（v3.1.0）**：单字段 6s 超时快速放弃，不拖死整个队列
 - **填完可视**：成功绿框、失败橙框；失败的值自动复制到剪贴板，人工粘贴即可
 - **红线设计**：`manual_fields` 里声明的字段（证件号/密码/验证码等）永不自动填充；**提交按钮永远人工点击**
 
@@ -28,6 +56,11 @@ python build_v3.py
 
 > `profile.json` 与生成的 `*.user.js` 含你的个人资料，已被 `.gitignore` 排除，不要提交或外传。
 
+## 文档
+
+- [profile.json 字段手册](docs/profile-schema.md) — 区块含义、命名约定、variants 用法、安全红线
+- [常见问题与排查](docs/troubleshooting.md) — 填不上/级联断半截/改了没生效等实战坑
+
 ## profile.json 结构
 
 | 区块 | 内容 |
@@ -40,7 +73,7 @@ python build_v3.py
 | `variants` | 按岗位类型切换的差异化配置 |
 | `manual_fields` | 永不自动填充的字段清单（安全红线） |
 
-字段命名约定：`字段名_后缀` 为同字段的站点变体（如 `籍贯_三级 = "浙江省-杭州市-西湖区"`）；`_` 开头的键是维护备注，脚本会跳过。
+字段命名约定：`字段名_后缀` 为同字段的站点变体（如 `籍贯_三级 = "浙江省-杭州市-西湖区"`）；`_` 开头的键是维护备注，脚本会跳过。详见[字段手册](docs/profile-schema.md)。
 
 ## 安全与免责
 

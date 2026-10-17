@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>网申秒填助手 · 演示表单</title>
+<style>
+  :root { --bd:#d9d9d9; --bg:#f5f6f8; --tx:#222; --acc:#2563eb; }
+  * { box-sizing: border-box; }
+  body { font-family: "Microsoft YaHei", "PingFang SC", sans-serif; background:var(--bg); color:var(--tx); margin:0; padding:32px 12px; }
+  .wrap { max-width: 860px; margin: 0 auto; }
+  .banner { background:#eef4ff; border:1px solid #bcd3f5; border-radius:10px; padding:12px 16px; font-size:13px; color:#1e40af; margin-bottom:20px; line-height:1.7; }
+  .card { background:#fff; border:1px solid var(--bd); border-radius:12px; padding:24px 28px; margin-bottom:20px; }
+  .card h2 { font-size:15px; margin:0 0 16px; padding-bottom:10px; border-bottom:1px solid #eee; color:#333; }
+  .row { display:flex; flex-wrap:wrap; gap:16px 24px; }
+  .f { flex:1 1 240px; margin-bottom:14px; }
+  .f label { display:block; font-size:13px; color:#555; margin-bottom:6px; }
+  .f label .req { color:#e5484d; margin-right:2px; }
+  .f input[type=text], .f input[type=tel], .f input[type=email], .f input[type=date], .f input[type=month], .f input[type=number], .f select, .f textarea {
+    width:100%; padding:8px 10px; border:1px solid var(--bd); border-radius:6px; font-size:13px; outline:none; background:#fff;
+  }
+  .f textarea { height:88px; resize:vertical; }
+  .f input:focus, .f select:focus, .f textarea:focus { border-color:var(--acc); }
+  .radios { display:flex; gap:16px; padding-top:6px; }
+  .radios label { display:inline-flex; align-items:center; gap:5px; font-size:13px; color:#333; margin:0; }
+  /* 仿 antd 自定义下拉 */
+  .xselect { position:relative; }
+  .xselect input { cursor:pointer; background:#fff; }
+  .xselect .dd { display:none; position:absolute; z-index:50; top:calc(100% + 4px); left:0; min-width:100%;
+    background:#fff; border:1px solid var(--bd); border-radius:6px; box-shadow:0 4px 14px rgba(0,0,0,.12); max-height:220px; overflow:auto; }
+  .xselect.open .dd { display:block; }
+  .xselect .dd .ddcol { display:flex; gap:2px; padding:4px; }
+  .xselect .select-option { padding:7px 12px; font-size:13px; border-radius:4px; cursor:pointer; white-space:nowrap; }
+  .xselect .select-option:hover { background:#f0f6ff; }
+  .xselect .select-option.on { background:#e6f0ff; color:var(--acc); font-weight:600; }
+  .foot { text-align:center; padding:8px 0 30px; color:#999; font-size:12px; }
+  .submit-bar { text-align:center; margin-top:4px; }
+  .submit-bar button { padding:9px 46px; background:var(--acc); color:#fff; border:none; border-radius:6px; font-size:14px; cursor:pointer; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="banner">
+    <b>网申秒填助手 · 演示表单</b><br>
+    本页模拟常见网申系统（原生控件 + 自定义下拉 + 三级级联省市区）。安装脚本后点击面板里的「⚡ 一键填充」，绿色描边 = 填充成功，橙色 = 需人工粘贴（值已复制到剪贴板）。脚本永远不会点「提交」。
+  </div>
+
+  <div class="card">
+    <h2>基本信息</h2>
+    <div class="row">
+      <div class="f"><label><span class="req">*</span>姓名</label><input type="text" name="name" placeholder="请输入姓名"></div>
+      <div class="f"><label>英文名</label><input type="text" name="en_name" placeholder="English name"></div>
+      <div class="f"><label><span class="req">*</span>性别</label>
+        <div class="radios">
+          <label><input type="radio" name="gender" value="男"> 男</label>
+          <label><input type="radio" name="gender" value="女"> 女</label>
+        </div>
+      </div>
+      <div class="f"><label><span class="req">*</span>手机</label><input type="tel" name="phone" placeholder="请输入手机号"></div>
+      <div class="f"><label><span class="req">*</span>邮箱</label><input type="email" name="email" placeholder="请输入邮箱"></div>
+      <div class="f"><label>出生年月</label><input type="month" name="birth"></div>
+      <div class="f"><label>年龄</label><input type="number" name="age"></div>
+      <div class="f"><label>民族</label>
+        <select name="nation"><option value="">请选择</option><option>汉族</option><option>回族</option><option>满族</option><option>蒙古族</option></select>
+      </div>
+      <div class="f"><label>政治面貌</label>
+        <select name="political"><option value="">请选择</option><option>中共党员</option><option>共青团员</option><option>群众</option></select>
+      </div>
+      <div class="f"><label>婚姻状况</label>
+        <div class="radios">
+          <label><input type="radio" name="marital" value="未婚"> 未婚</label>
+          <label><input type="radio" name="marital" value="已婚"> 已婚</label>
+        </div>
+      </div>
+      <div class="f"><label>籍贯（省-市-区）</label>
+        <div class="xselect region-cascader" id="region">
+          <input type="text" name="native_place" readonly placeholder="请选择省 / 市 / 区">
+          <div class="dd"><div class="ddcol" id="region_menu"></div></div>
+        </div>
+      </div>
+      <div class="f"><label>最高学历</label>
+        <select name="degree"><option value="">请选择</option><option>大专</option><option>本科</option><option>硕士</option><option>博士</option></select>
+      </div>
+      <div class="f"><label>工作经验</label>
+        <select name="exp"><option value="">请选择</option><option>应届毕业生</option><option>1-3年</option><option>3-5年</option></select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>求职意向</h2>
+    <div class="row">
+      <div class="f"><label><span class="req">*</span>期望职位</label><input type="text" name="expect_job" placeholder="如：管培生"></div>
+      <div class="f"><label>期望职能（自定义下拉）</label>
+        <div class="xselect" id="func">
+          <input type="text" name="expect_func" readonly placeholder="请选择">
+          <div class="dd"><div class="ddcol" id="func_menu"></div></div>
+        </div>
+      </div>
+      <div class="f"><label>期望行业</label><input type="text" name="expect_industry" placeholder="如：快消/美妆/日化"></div>
+      <div class="f"><label>期望工作城市</label><input type="text" name="expect_city" placeholder="如：杭州"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>教育经历</h2>
+    <div class="row">
+      <div class="f"><label><span class="req">*</span>学校名称</label><input type="text" name="school" placeholder="请输入学校名称"></div>
+      <div class="f"><label><span class="req">*</span>专业名称</label><input type="text" name="major" placeholder="请输入专业名称"></div>
+      <div class="f"><label>学历</label>
+        <select name="edu_level"><option value="">请选择</option><option>本科</option><option>硕士</option></select>
+      </div>
+      <div class="f"><label>毕业时间</label><input type="month" name="grad_date"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>自我评价</h2>
+    <div class="f" style="flex:none;width:100%"><textarea name="self_eval" placeholder="请简单介绍自己（300-1000字）"></textarea></div>
+  </div>
+
+  <div class="submit-bar"><button type="button">提 交</button></div>
+  <div class="foot">demo page · 表单不会真的提交</div>
+</div>
+
+<script>
+/* 本地无头测试用：?inject=1 时直接引入构建产物（普通用户走 Tampermonkey，不需要这个） */
+(function () {
+  if (location.search.indexOf("inject=1") !== -1) {
+    var s = document.createElement("script");
+    s.src = "autofill.user.js";
+    document.head.appendChild(s);
+  }
+})();
+</script>
+<script>
+(function () {
+  var REGION = {
+    "浙江省": { "杭州市": ["西湖区", "滨江区", "余杭区"], "宁波市": ["海曙区", "江北区"] },
+    "江苏省": { "南京市": ["玄武区", "鼓楼区", "建邺区"], "苏州市": ["姑苏区", "虎丘区"] },
+    "山东省": { "济南市": ["历下区", "市中区"], "烟台市": ["芝罘区", "莱山区"] }
+  };
+  var FUNCS = ["市场营销", "工艺管理", "质量管理", "供应链管理", "电商运营", "内容运营", "销售", "产品开发"];
+
+  function makeXSelect(rootId, menuId, onPick) {
+    var root = document.getElementById(rootId);
+    var input = root.querySelector("input");
+    var dd = root.querySelector(".dd");
+    input.addEventListener("click", function () { root.classList.add("open"); });
+    input.addEventListener("mousedown", function () { root.classList.add("open"); });
+    document.addEventListener("click", function (e) {
+      if (!root.contains(e.target)) root.classList.remove("open");
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") root.classList.remove("open");
+    });
+    root.open = function () { root.classList.add("open"); };
+    return { root: root, input: input, dd: dd };
+  }
+
+  /* 籍贯：三级级联 */
+  var regionSel = makeXSelect("region", "region_menu");
+  var picked = [];
+  function renderRegionMenu() {
+    var menu = document.getElementById("region_menu");
+    menu.innerHTML = "";
+    var items;
+    if (picked.length === 0) items = Object.keys(REGION);
+    else if (picked.length === 1) items = Object.keys(REGION[picked[0]]);
+    else if (picked.length === 2) items = REGION[picked[0]][picked[1]];
+    else items = [];
+    items.forEach(function (it) {
+      var d = document.createElement("div");
+      d.className = "select-option" + (picked.indexOf(it) >= 0 ? " on" : "");
+      d.textContent = it;
+      d.addEventListener("click", function (ev) {
+        ev.stopPropagation();
+        if (picked.length >= 3) return;
+        picked.push(it);
+        if (picked.length === 3) {
+          regionSel.input.value = picked.join(" / ");
+          regionSel.root.classList.remove("open");
+          picked = [];
+        } else {
+          renderRegionMenu();
+        }
+      });
+      menu.appendChild(d);
+    });
+  }
+  regionSel.root.addEventListener("click", function () { if (!regionSel.root.classList.contains("open")) return; });
+  regionSel.root.open = function () { picked = []; renderRegionMenu(); regionSel.root.classList.add("open"); };
+  // 打开时重置菜单到第一级
+  var origOpen = regionSel.root.open;
+  regionSel.input.addEventListener("click", function () { picked = []; renderRegionMenu(); });
+
+  /* 期望职能：单级自定义下拉 */
+  var funcSel = makeXSelect("func", "func_menu");
+  var fmenu = document.getElementById("func_menu");
+  FUNCS.forEach(function (f) {
+    var d = document.createElement("div");
+    d.className = "select-option" + (funcSel.input.value === f ? " on" : "");
+    d.textContent = f;
+    d.addEventListener("click", function (ev) {
+      ev.stopPropagation();
+      funcSel.input.value = f;
+      funcSel.root.classList.remove("open");
+    });
+    fmenu.appendChild(d);
+  });
+})();
+</script>
+</body>
+</html>
