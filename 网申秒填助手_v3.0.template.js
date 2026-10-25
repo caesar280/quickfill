@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         网申秒填助手 v3.0（profile.json 数据源·站点适配版）
-// @namespace    wangjinlong.job
+// @namespace    lingyang.quickfill
 // @version      3.1.0
 // @description  网申表单秒填：吃 profile.json 单一数据源；字段别名表+全局唯一匹配；原生下拉/自定义下拉/单选/多选/级联(省市县)/日期全支持；绿橙标记。只填充，绝不自动提交。
-// @author       Jarvis
+// @author       聆阳
 // @match        *://*/*
 // @grant        GM_setValue
 // @grant        GM_getValue
@@ -1104,7 +1104,7 @@
     $('dump').onclick = () => {
       const txt = dumpFields();
       const ta = $('json'); ta.style.display = 'block'; ta.value = txt;
-      log('已抓取本页字段并复制（含标签/类型/单选组）。发给贾维斯即可做站点专用适配。');
+      log('已抓取本页字段并复制（含标签/类型/单选组），可用于新增站点适配。');
     };
     $('expand').onclick = () => expandEditCards();
     $('clear').onclick = () => { clearMarks(); log('已清除页面标记。'); };

@@ -1,8 +1,12 @@
-# quickfill (网申秒填助手)
+# quickfill · 网申秒填助手
 
 [中文](README.md) | **English**
 
 A Tampermonkey userscript that bulk-fills campus-recruitment online application forms from a single `profile.json`. Built during the 2026 autumn recruitment season and battle-tested against a dozen real ATS portals. **It fills forms. It never submits.**
+
+![One-click autofill demo: green means filled, orange means manual review](docs/screenshots/quickfill-demo.gif)
+
+> The demo uses placeholder data and never triggers form submission.
 
 ## Why
 
