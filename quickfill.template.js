@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         quickfill · 网申秒填助手
 // @namespace    lingyang.quickfill
-// @version      3.1.0
+// @version      3.2.0
 // @description  网申表单秒填：吃 profile.json 单一数据源；字段别名表+全局唯一匹配；原生下拉/自定义下拉/单选/多选/级联(省市县)/日期全支持；绿橙标记。只填充，绝不自动提交。
 // @author       聆阳
 // @match        *://*/*
@@ -10,6 +10,7 @@
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @grant        GM_deleteValue
+// @grant        GM_registerMenuCommand
 // @run-at       document-idle
 // @all-frames   true
 // ==/UserScript==
@@ -24,6 +25,7 @@
 //   7. 填完绿/橙描边标记，橙色值自动复制到剪贴板；
 //   8. 「展开编辑卡片」可先点开摘要式 ATS 的编辑按钮再填充。
 // 红线：绝不自动提交；敏感字段按 manual_fields 配置跳过。
+// v3.2：默认按站点启用；新增基础资料向导；补充自动化测试。
 
 (function () {
   'use strict';
@@ -31,7 +33,7 @@
   // ======================== 资料数据（由 build_v3.py 从 profile.json 生成） ========================
   const DEFAULT_PROFILE = __PROFILE_JSON__;
   const LS_KEY = 'jlj_form_filler_profile_v3';
-  const VER = '3.1.0';   // 与 @version 同步（面板标题/日志统一引用，避免"界面 v3.1 / 元数据 3.0.0"的错位）
+  const VER = '3.2.0';   // 与 @version 同步（面板标题/日志统一引用）
 
   // P-D: 资料存 Tampermonkey 扩展域存储（GM_*），页面脚本读不到、也预置不了
   // GM 降级契约：无 TM 时不回退 localStorage，直接抛错提示用户
@@ -963,8 +965,8 @@
   function isCurrentSiteEnabled() {
     const sites = getEnabledSites();
     const host = location.hostname;
-    // 默认启用，除非显式关闭
-    return sites[host] !== false;
+    // 默认关闭；只对显式启用的站点生效。localhost 保留给本地演示。
+    return sites[host] === true || /^(localhost|127\.0\.0\.1|\[::1\])$/.test(host);
   }
   function toggleCurrentSite() {
     const sites = getEnabledSites();
@@ -972,6 +974,59 @@
     sites[host] = !isCurrentSiteEnabled();
     localStorage.setItem(SITE_ENABLED_KEY, JSON.stringify(sites));
     return sites[host];
+  }
+  function registerSiteMenu() {
+    if (typeof GM_registerMenuCommand !== 'function') return;
+    const action = isCurrentSiteEnabled() ? '停用' : '启用';
+    GM_registerMenuCommand(`${action} quickfill（${location.hostname}）`, () => {
+      toggleCurrentSite();
+      location.reload();
+    });
+  }
+
+  function createBasicProfile(values) {
+    const manualFields = JSON.parse(JSON.stringify(DEFAULT_PROFILE.manual_fields || {}));
+    return {
+      _meta: {
+        说明: '由 quickfill 基础资料向导创建',
+        示例数据: false,
+        版本: '1.0.0',
+        最后更新: new Date().toISOString().slice(0, 10),
+        维护者: values.name,
+        使用铁律: ['只填充，绝不自动提交', '提交前逐项核对', '敏感字段始终人工填写']
+      },
+      personal: {
+        姓名: values.name,
+        手机: values.phone,
+        手机_带区号: '+86 ' + values.phone,
+        邮箱: values.email
+      },
+      intent: {
+        期望职位: values.job,
+        期望职能: values.function,
+        期望行业: values.industry,
+        期望工作城市: values.city
+      },
+      education: [{
+        学校名称: values.school,
+        专业名称: values.major,
+        毕业时间: values.graduation,
+        学历: '本科'
+      }],
+      internships: [],
+      campus: [],
+      projects: [],
+      awards: [],
+      scholarship: {},
+      languages: [],
+      skills: {},
+      research: {},
+      other: {},
+      self_eval: {},
+      variants: {},
+      manual_fields: manualFields,
+      files: {}
+    };
   }
 
   function collectTextBlocks() {
@@ -1009,6 +1064,7 @@
   }
 
   function renderPanel() {
+    const sampleProfile = isSampleProfile();
     shadow.innerHTML = `
   <style>
     .wrap{font:12px/1.5 "Microsoft YaHei",system-ui;color:#222;background:#fff;border:1px solid #d43f3a;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.22);width:310px;max-height:72vh;display:flex;flex-direction:column;overflow:hidden}
@@ -1022,6 +1078,12 @@
     button.main{background:#c9302c;color:#fff;border-color:#c9302c;font-weight:700}
     button.ok{background:#eaf7ea;border-color:#9ecf9e}
     textarea{width:100%;height:90px;font:11px monospace;box-sizing:border-box;display:none}
+    .editor{border:1px solid #ead7d5;border-radius:7px;background:#fff9f8;padding:7px;margin:0 0 8px}
+    .editor summary{cursor:pointer;color:#8a1f1c;font-weight:700;font-size:11px}
+    .editor label{display:block;font-size:10px;color:#666;margin-top:5px}
+    .editor input{width:100%;box-sizing:border-box;border:1px solid #d8d8d8;border-radius:4px;padding:4px 6px;font:11px "Microsoft YaHei",system-ui;background:#fff}
+    .editor .grid{display:grid;grid-template-columns:1fr 1fr;gap:0 6px}
+    .editor .save{margin-top:7px;width:100%;background:#c9302c;color:#fff;border-color:#c9302c;font-weight:700}
     .st{white-space:pre-wrap;font-size:11px;color:#444;background:#f7f7f7;border-radius:5px;padding:4px;max-height:100px;overflow:auto;margin-top:4px}
     .note{font-size:10px;color:#999;margin-top:3px}
   </style>
@@ -1032,14 +1094,39 @@
         <label style="font-size:11px;color:#8a1f1c;font-weight:700"><input type="checkbox" id="siteToggle" checked> 本站点启用</label>
         <span style="font-size:10px;color:#999" id="siteName"></span>
       </div>
-      <div class="sec"><b>① 一键填充（基础+意向+教育+语言+技能+自评）</b>
-        <button class="main" id="go">⚡ 一键填充</button>
-        <button id="preview">匹配预览</button></div>
-      <div class="sec"><b>② 实习经历（逐条）</b><span id="interns"></span></div>
-      <div class="sec"><b>③ 校园经历（逐条）</b><span id="campus"></span></div>
-      <div class="sec"><b>④ 项目经历（逐条）</b><span id="projects"></span></div>
-      <div class="sec"><b>⑤ 获奖经历（逐条）</b><span id="awards"></span></div>
-      <div class="sec"><b>⑥ 长文本（点击复制后粘贴）</b><span id="texts"></span></div>
+      <details class="editor" id="baseEditor"${sampleProfile ? ' open' : ''}>
+        <summary>${sampleProfile ? '填写基础资料' : '修改基础资料'}</summary>
+        <div class="grid">
+          <label>姓名<input id="pfName" autocomplete="name" /></label>
+          <label>手机<input id="pfPhone" type="tel" autocomplete="tel" /></label>
+        </div>
+        <label>邮箱<input id="pfEmail" type="email" autocomplete="email" /></label>
+        <div class="grid">
+          <label>学校<input id="pfSchool" /></label>
+          <label>专业<input id="pfMajor" /></label>
+        </div>
+        <div class="grid">
+          <label>毕业时间<input id="pfGraduation" type="month" /></label>
+          <label>期望职位<input id="pfJob" /></label>
+        </div>
+        <div class="grid">
+          <label>期望城市<input id="pfCity" /></label>
+          <label>期望行业<input id="pfIndustry" /></label>
+        </div>
+        <label>期望职能<input id="pfFunction" /></label>
+        <button class="save" id="saveBasic">保存基础资料</button>
+        <div class="note">资料只保存在 Tampermonkey 存储中。更多经历可继续使用下方「编辑资料」导入 JSON。</div>
+      </details>
+      <div id="advancedSections"${sampleProfile ? ' style="display:none"' : ''}>
+        <div class="sec"><b>① 一键填充（基础+意向+教育+语言+技能+自评）</b>
+          <button class="main" id="go">⚡ 一键填充</button>
+          <button id="preview">匹配预览</button></div>
+        <div class="sec"><b>② 实习经历（逐条）</b><span id="interns"></span></div>
+        <div class="sec"><b>③ 校园经历（逐条）</b><span id="campus"></span></div>
+        <div class="sec"><b>④ 项目经历（逐条）</b><span id="projects"></span></div>
+        <div class="sec"><b>⑤ 获奖经历（逐条）</b><span id="awards"></span></div>
+        <div class="sec"><b>⑥ 长文本（点击复制后粘贴）</b><span id="texts"></span></div>
+      </div>
       <div class="sec"><b>⑦ 工具</b>
         <button id="dump">抓取字段</button>
         <button id="expand">展开编辑卡片</button>
@@ -1057,6 +1144,20 @@
     ensureStyles(shadow);   // P-C: 每次重绘后确保样式生效（正常环境直通）
 
     const $ = id => shadow.getElementById(id);
+    const personal = PROFILE.personal || {};
+    const intent = PROFILE.intent || {};
+    const education = (PROFILE.education && PROFILE.education[0]) || {};
+    const setValue = (id, value) => { const el = $(id); if (el) el.value = value == null ? '' : String(value); };
+    setValue('pfName', personal.姓名);
+    setValue('pfPhone', personal.手机);
+    setValue('pfEmail', personal.邮箱);
+    setValue('pfSchool', education.学校名称);
+    setValue('pfMajor', education.专业名称);
+    setValue('pfGraduation', education.毕业时间);
+    setValue('pfJob', intent.期望职位);
+    setValue('pfCity', intent.期望工作城市);
+    setValue('pfIndustry', intent.期望行业);
+    setValue('pfFunction', intent.期望职能);
 
     (PROFILE.internships || []).filter(e => !e['_不列入实习经历']).forEach((e, i) => {
       const b = document.createElement('button');
@@ -1101,14 +1202,18 @@
       siteToggle.checked = isCurrentSiteEnabled();
       siteToggle.onchange = () => {
         const enabled = toggleCurrentSite();
-        log(enabled ? `✅ 已在 ${location.hostname} 启用` : `⏸ 已在 ${location.hostname} 停用，刷新后生效`);
+        if (!enabled) {
+          if (observer) observer.disconnect();
+          host.remove();
+          console.log('[quickfill] 本站点已停用，可从 Tampermonkey 菜单重新启用。');
+        }
       };
     }
     if (siteName) siteName.textContent = location.hostname;
 
     const goButton = $('go');
-    goButton.onclick = () => fillAll();
-    if (isSampleProfile()) {
+    if (goButton) goButton.onclick = () => fillAll();
+    if (goButton && isSampleProfile()) {
       goButton.textContent = '先替换示例资料';
       goButton.title = '点击「编辑资料」导入自己的 profile.json';
     }
@@ -1144,6 +1249,73 @@
       renderPanel();
       log('已还原默认资料（profile.json 内置版）。');
     };
+    $('saveBasic').onclick = () => {
+      const values = {
+        name: $('pfName').value.trim(),
+        phone: $('pfPhone').value.trim(),
+        email: $('pfEmail').value.trim(),
+        school: $('pfSchool').value.trim(),
+        major: $('pfMajor').value.trim(),
+        graduation: $('pfGraduation').value,
+        job: $('pfJob').value.trim(),
+        city: $('pfCity').value.trim(),
+        industry: $('pfIndustry').value.trim(),
+        function: $('pfFunction').value.trim()
+      };
+      if (!values.name || !values.phone || !values.email) {
+        log('姓名、手机和邮箱为必填项。');
+        return;
+      }
+      if (!/^[0-9+\-\s]{6,20}$/.test(values.phone)) {
+        log('手机格式不正确。');
+        return;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) {
+        log('邮箱格式不正确。');
+        return;
+      }
+
+      let next;
+      if (isSampleProfile()) {
+        next = createBasicProfile(values);
+      } else {
+        next = JSON.parse(JSON.stringify(PROFILE));
+        next._meta = next._meta || {};
+        next.personal = next.personal || {};
+        next.intent = next.intent || {};
+        next.education = next.education || [];
+        next.education[0] = next.education[0] || {};
+        Object.assign(next.personal, {
+          姓名: values.name,
+          手机: values.phone,
+          手机_带区号: '+86 ' + values.phone,
+          邮箱: values.email
+        });
+        Object.assign(next.intent, {
+          期望职位: values.job,
+          期望工作城市: values.city,
+          期望行业: values.industry,
+          期望职能: values.function
+        });
+        Object.assign(next.education[0], {
+          学校名称: values.school,
+          专业名称: values.major,
+          毕业时间: values.graduation
+        });
+        delete next._meta['示例数据'];
+        next._meta.维护者 = values.name;
+        next._meta.最后更新 = new Date().toISOString().slice(0, 10);
+      }
+
+      const serialized = JSON.stringify(next, null, 1);
+      if (!gmSet(LS_KEY, serialized)) {
+        log('保存失败：请确认脚本运行在 Tampermonkey 中。');
+        return;
+      }
+      PROFILE = next;
+      renderPanel();
+      log('✅ 基础资料已保存，可以开始填充。');
+    };
     $('mini').onclick = () => {
       const bd = $('bd');
       bd.style.display = bd.style.display === 'none' ? 'block' : 'none';
@@ -1171,9 +1343,9 @@
   let frameRetry = 0;   // P-A: 帧内迟到表单的重试计数
   function mount() {
     if (document.getElementById('jlj-panel-host')) return;
-    // Q1: 检查站点开关
+    // Q1: 默认关闭；未启用时不挂载面板，也不扫描表单。
     if (!isCurrentSiteEnabled()) {
-      console.log('[秒填助手 ' + VER + '] 本站点已停用，面板不加载。');
+      console.log('[秒填助手 ' + VER + '] 本站点尚未启用，可在 Tampermonkey 菜单中开启。');
       return;
     }
     // Q3/P-A: 帧内表单多是异步渲染的——首次没有控件时不再一次性放弃，改为限时轮询重试（60×500ms=30s）
@@ -1244,6 +1416,12 @@
     observer.observe(document.body, { childList: true, subtree: true });
   }
 
-  if (document.body) { mount(); setupObserver(); }
-  else window.addEventListener('DOMContentLoaded', () => { mount(); setupObserver(); });
+  function init() {
+    registerSiteMenu();
+    mount();
+    if (isCurrentSiteEnabled()) setupObserver();
+  }
+
+  if (document.body) init();
+  else window.addEventListener('DOMContentLoaded', init);
 })();

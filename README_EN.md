@@ -15,9 +15,10 @@ A Tampermonkey userscript that bulk-fills campus-recruitment online application 
 
 1. Install [Tampermonkey](https://www.tampermonkey.net/) if needed.
 2. Install [quickfill.user.js](https://github.com/caesar280/quickfill/releases/latest/download/quickfill.user.js).
-3. Open any page, choose **编辑资料** in the bottom-right panel, paste your own `profile.json`, and save.
+3. Open the target application page and choose **启用 quickfill（当前网站）** from the Tampermonkey menu.
+4. Use the basic profile form in the bottom-right panel, or choose **编辑资料** to import a full `profile.json`.
 
-The downloaded script includes placeholder data and keeps autofill disabled until a real profile is saved.
+The script is disabled by default on every site. It does not mount UI or inspect forms until enabled for that exact hostname.
 
 ## Why
 
@@ -38,7 +39,7 @@ Every company runs its own application portal. During job-hunting season you ret
 
 ```bash
 cp profile.example.json profile.json   # then edit with your own data
-python build_v3.py                     # generates 网申秒填助手_v3.0.user.js
+python build_v3.py                     # generates quickfill.user.js
 ```
 
 Install the generated file in Tampermonkey, open any application page, click ⚡ 一键填充.
@@ -55,6 +56,8 @@ Try it safely on the bundled demo form: `demo/test.html` (serves a fake ATS form
 ## Safety & disclaimer
 
 - This tool only fills forms you open yourself. No batch submission, no CAPTCHA handling, no bypassing.
+- Profile data stays in Tampermonkey storage. The script sends no network requests and contains no analytics or telemetry.
+- The script only runs after the user explicitly enables it for that hostname.
 - Review every field before submitting; the author takes no responsibility for mis-filled applications.
 
 ## License

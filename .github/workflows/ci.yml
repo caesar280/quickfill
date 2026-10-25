@@ -16,6 +16,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+          cache: "npm"
 
       - name: Build userscript from example profile
         run: |
@@ -23,7 +24,13 @@ jobs:
           python build_v3.py
 
       - name: Syntax check generated userscript
-        run: node --check "网申秒填助手_v3.0.user.js"
+        run: node --check quickfill.user.js
+
+      - name: Install test dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm test
 
       - name: Verify no real profile leaked
         run: |
@@ -31,6 +38,6 @@ jobs:
           if git ls-files --error-unmatch profile.json >/dev/null 2>&1; then
             echo "::error::profile.json 被提交了——真实资料严禁入库"; exit 1
           fi
-          if grep -q "__PROFILE_JSON__" "网申秒填助手_v3.0.user.js"; then
+          if grep -q "__PROFILE_JSON__" quickfill.user.js; then
             echo "::error::构建产物仍含占位符"; exit 1
           fi

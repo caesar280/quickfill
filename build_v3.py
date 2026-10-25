@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
-"""build_v3.py — 从 profile.json 生成 网申秒填助手_v3.0.user.js
+"""build_v3.py — 从 profile.json 生成 quickfill.user.js
 用法: python build_v3.py
 资料更新流程: 改 profile.json → 重跑本脚本 → Tampermonkey 里重装/覆盖脚本。
 """
 import json, io, os, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-PROFILE = os.path.join(HERE, "profile.json")
-TPL = os.path.join(HERE, "网申秒填助手_v3.0.template.js")
-OUT = os.path.join(HERE, "网申秒填助手_v3.0.user.js")
+PROFILE = os.environ.get("QUICKFILL_PROFILE") or os.path.join(HERE, "profile.json")
+TPL = os.path.join(HERE, "quickfill.template.js")
+OUT = os.environ.get("QUICKFILL_OUT") or os.path.join(HERE, "quickfill.user.js")
 
 with io.open(PROFILE, encoding="utf-8") as f:
     profile = json.load(f)

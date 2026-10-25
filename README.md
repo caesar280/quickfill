@@ -1,4 +1,4 @@
-# quickfill · 网申秒填助手 v3.1
+# quickfill · 网申秒填助手 v3.2
 
 **中文** | [English](README_EN.md)
 
@@ -18,9 +18,10 @@
 
 1. 安装 [Tampermonkey](https://www.tampermonkey.net/)（已安装可跳过）。
 2. [安装 quickfill.user.js](https://github.com/caesar280/quickfill/releases/latest/download/quickfill.user.js)。
-3. 打开任意网页，在右下角面板点击「编辑资料」，粘贴自己的 `profile.json` 并保存。
+3. 打开目标网申页，在 Tampermonkey 菜单中选择「启用 quickfill（当前网站）」。
+4. 打开右下角面板，使用「基础资料」向导，或点击「编辑资料」导入完整 `profile.json`。
 
-首次安装内置的是示例资料，脚本会暂停一键填充；替换资料后才开始工作。
+脚本默认在所有网站关闭。未启用时不会挂载面板，也不会扫描表单。
 
 ![演示：一键填充](docs/screenshots/demo-form.png)
 
@@ -63,7 +64,7 @@ python -m http.server 18777
 cp profile.example.json profile.json
 # 2. 把 profile.json 里的示例数据换成你自己的（结构说明见 _meta 和各区块 _备注）
 python build_v3.py
-# 3. 生成 网申秒填助手_v3.0.user.js → Tampermonkey → 新建脚本 → 粘贴保存
+# 3. 生成 quickfill.user.js → Tampermonkey → 新建脚本 → 粘贴保存
 # 4. 打开任意网申页，点面板「一键填充」
 ```
 
@@ -91,6 +92,8 @@ python build_v3.py
 ## 安全与免责
 
 - 本脚本只做「把你的资料填进表单」，不做任何绕过、批量投递、验证码处理
+- 资料只存于 Tampermonkey 本地存储；脚本不发送网络请求，也不包含统计或遥测
+- 仅对用户在 Tampermonkey 菜单中显式启用的网站运行
 - 提交前请人工核对每个字段；填错导致的后果由使用者自行承担
 - 请勿用于他人表单或未经授权的场景
 

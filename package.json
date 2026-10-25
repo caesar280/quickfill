@@ -1,0 +1,12 @@
+{
+  "name": "quickfill",
+  "version": "3.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs"
+  },
+  "devDependencies": {
+    "jsdom": "^29.0.0"
+  }
+}
