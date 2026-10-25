@@ -2,11 +2,22 @@
 
 [中文](README.md) | **English**
 
+[![CI](https://github.com/caesar280/quickfill/actions/workflows/ci.yml/badge.svg)](../../actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/caesar280/quickfill)](https://github.com/caesar280/quickfill/releases)
+
 A Tampermonkey userscript that bulk-fills campus-recruitment online application forms from a single `profile.json`. Built during the 2026 autumn recruitment season and battle-tested against a dozen real ATS portals. **It fills forms. It never submits.**
 
 ![One-click autofill demo: green means filled, orange means manual review](docs/screenshots/quickfill-demo.gif)
 
 > The demo uses placeholder data and never triggers form submission.
+
+## Install
+
+1. Install [Tampermonkey](https://www.tampermonkey.net/) if needed.
+2. Install [quickfill.user.js](https://github.com/caesar280/quickfill/releases/latest/download/quickfill.user.js).
+3. Open any page, choose **编辑资料** in the bottom-right panel, paste your own `profile.json`, and save.
+
+The downloaded script includes placeholder data and keeps autofill disabled until a real profile is saved.
 
 ## Why
 

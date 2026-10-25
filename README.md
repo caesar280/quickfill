@@ -1,9 +1,10 @@
-# quickfill · 网申秒填助手 v3.0
+# quickfill · 网申秒填助手 v3.1
 
 **中文** | [English](README_EN.md)
 
 [![CI](https://github.com/caesar280/quickfill/actions/workflows/ci.yml/badge.svg)](../../actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/caesar280/quickfill)](https://github.com/caesar280/quickfill/releases)
 
 校招网申（在线申请表）批量自动填充的油猴脚本。一份 `profile.json` 管全部资料，一键填完一整页表单——**只填充，绝不自动提交**。
 
@@ -12,6 +13,14 @@
 ![一键填充完整演示：绿色表示成功，橙色表示需人工确认](docs/screenshots/quickfill-demo.gif)
 
 > 演示使用脱敏示例资料，过程不触发表单提交。
+
+## 30 秒安装
+
+1. 安装 [Tampermonkey](https://www.tampermonkey.net/)（已安装可跳过）。
+2. [安装 quickfill.user.js](https://github.com/caesar280/quickfill/releases/latest/download/quickfill.user.js)。
+3. 打开任意网页，在右下角面板点击「编辑资料」，粘贴自己的 `profile.json` 并保存。
+
+首次安装内置的是示例资料，脚本会暂停一键填充；替换资料后才开始工作。
 
 ![演示：一键填充](docs/screenshots/demo-form.png)
 

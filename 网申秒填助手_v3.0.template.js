@@ -1,10 +1,12 @@
 // ==UserScript==
-// @name         网申秒填助手 v3.0（profile.json 数据源·站点适配版）
+// @name         quickfill · 网申秒填助手
 // @namespace    lingyang.quickfill
 // @version      3.1.0
 // @description  网申表单秒填：吃 profile.json 单一数据源；字段别名表+全局唯一匹配；原生下拉/自定义下拉/单选/多选/级联(省市县)/日期全支持；绿橙标记。只填充，绝不自动提交。
 // @author       聆阳
 // @match        *://*/*
+// @downloadURL  https://github.com/caesar280/quickfill/releases/latest/download/quickfill.user.js
+// @updateURL    https://github.com/caesar280/quickfill/releases/latest/download/quickfill.user.js
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @grant        GM_deleteValue
@@ -67,6 +69,7 @@
     return JSON.parse(JSON.stringify(DEFAULT_PROFILE));
   }
   let PROFILE = loadProfile();
+  const isSampleProfile = () => !!(PROFILE && PROFILE._meta && PROFILE._meta['示例数据'] === true);
 
   // ======================== 基础工具 ========================
   const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -891,6 +894,10 @@
   }
 
   async function fillAll() {
+    if (isSampleProfile()) {
+      log('当前是示例资料。请先点击「编辑资料」，导入自己的 profile.json 并保存。');
+      return;
+    }
     clearMarks();
     await fillPairs(flatBasicPairs(), '一键填充');
     log('✅ 填充完成（绿=已填，橙=待手动，待手动值已复制到剪贴板）。请核对后手动提交。');
@@ -1099,7 +1106,12 @@
     }
     if (siteName) siteName.textContent = location.hostname;
 
-    $('go').onclick = () => fillAll();
+    const goButton = $('go');
+    goButton.onclick = () => fillAll();
+    if (isSampleProfile()) {
+      goButton.textContent = '先替换示例资料';
+      goButton.title = '点击「编辑资料」导入自己的 profile.json';
+    }
     $('preview').onclick = () => previewMatch();
     $('dump').onclick = () => {
       const txt = dumpFields();
